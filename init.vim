@@ -1,17 +1,16 @@
 set noswapfile
 set showcmd
+set splitbelow splitright
+set noswapfile
 set number
 set relativenumber 
 set scrolloff=7
 ":set path+=**
 set wildmenu
 let g:netrw_banner=0
-let g:netwr_browse_split=0
-
-nmap <silent> <space>q 12:Lexplore<CR>:let g:netrw_browse_split=0<CR>
-nmap <silent> <space>e :Rexplore<CR>:let g:netrw_browse_split=0<CR>
-nmap <silent> <space>t :Texplore<CR>:let g:netrw_browse_Split=0<CR>
-
+let g:netrw_browse_Split=0
+nmap <silent> <Space>t :Texplore<CR>
+nmap <silent> <Space>e :Rexplore<CR>
 
 call plug#begin()
 Plug 'karoliskoncevicius/vim-sendtowindow'
@@ -21,9 +20,6 @@ Plug 'ThePrimeagen/harpoon' ,{'branch':'harpoon2'}
 call plug#end()
 
 "set nosplitbelow
-set splitbelow splitright
-set noswapfile
-
 noremap <silent> <C-Left> :vertical resize -3<CR>
 noremap <silent> <C-Right> :vertical resize +3<CR>
 noremap <silent> <C-Up> :resize -3<CR>
@@ -36,7 +32,7 @@ map <Leader>c {V}<space>l<C-w><C-l>i<CR><C-\><C-n><C-w>h
 map <Leader>v V<space>l<C-w><C-l>i<CR><C-\><C-n><C-w>h
 tmap <Esc> <C-\><C-n>
 
-map <C-e> :lua require("harpoon.ui").toggle_quick_menu()<CR>
+map <silent> <C-e> :lua require("harpoon.ui").toggle_quick_menu()<CR>
 map <Leader>fa :lua require("harpoon.mark").add_file()<CR>
 ":lua require("harpoon.ui").nav_next()                   -- navigates to next mark
 ":lua require("harpoon.ui").nav_prev()                   -- navigates to previous mark
