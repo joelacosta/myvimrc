@@ -40,12 +40,13 @@ function! Correr()
   call chansend(t:terminal_id,"\r")  
   call chansend(t:terminal_id,"\r")  
   wincmd p
+  normal! `>j_
 endfunction
 
 tmap <Esc> <C-\><C-n>
 nnoremap <silent> <leader>tp :call AbrirTerminal()<CR>
 nnoremap <silent> <Leader>r ggVG"cy :call Correr()<CR>
-nnoremap <silent> <Leader>c {V}"cy :call Correr()<CR>
+nnoremap <silent> <Leader>c }V{"cy :call Correr()<CR>
 nnoremap <silent> <Leader>v _v$"cy :call Correr()<CR>
 "--------------------------------------------------------------------
 
