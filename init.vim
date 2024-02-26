@@ -1,5 +1,5 @@
 set noswapfile
-
+" ver https://vi.stackexchange.com/questions/31845/how-to-open-current-directory-in-file-explorer-by-vim "
 set number
 set relativenumber
 set scrolloff=7
@@ -17,7 +17,6 @@ noremap <silent> <C-Left> :vertical resize -3<CR>
 noremap <silent> <C-Right> :vertical resize +3<CR>
 noremap <silent> <C-Up> :resize -3<CR>
 noremap <silent> <C-Down> :resize +3<CR>
-
 
 "-------------------------------- INTEGRACION CON PYTHON -----------
 set path =,,C:/Users/JoelA/AppData/Local/Programs/Python/Python312/**
