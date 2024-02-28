@@ -107,6 +107,7 @@ function! AbrirTerminal()
   setlocal norelativenumber
   execute chansend(t:terminal_id,'python')
   execute chansend(t:terminal_id,"\r")
+  let t:terminal_line = getcurpos()[1] 
   wincmd p
 endfunction
 
