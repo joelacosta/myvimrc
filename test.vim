@@ -1,15 +1,29 @@
 "probar con :global/Error/print
 " :%s/Error//gne
-function! ReadTerm()
-  execute win_id2win(t:terminal_windows_id) "wincmd w"
-  normal! G
-  let t:errores = search("Error",'bcnW')
-  wincmd p
-  echom t:errores
+function! Test()
+  if exists("t:indice")
+    let t:indice=t:indice+1
+  else
+    let t:indice = 0
+  endif
+echom t:indice
 endfunction
 
+"let timer = timer_start(1000, 'ReadTerm',{'repeat':-1})
 
-function! ReadTerm2()
+"execute(":sign define error text=>> texthl=WarningMsg")
+
+function! BuscarErrores()
+  if t:terminal_new_line != t:terminal_last_line
+    execute win_id2win(t:terminal_windows_id) "wincmd w"
+    "execute(t:terminal_last_line..","..t:terminal_new_line.."g/Error/call sign_place(0,'','error','',{'lnum':line('.')})","silent!")
+    execute t:terminal_last_line..","..t:terminal_new_line "g/Error/call sign_place(0,'','error','',{'lnum':line('.')})"
+    let t:terminal_last_line = t:terminal_new_line
+    wincmd p
+  endif
+endfunction
+
+function! ReadTerm()
   let t:line_new = getcurpos(t:terminal_windows_id)[1]
 if t:terminal_line == t:line_new
    let t:terminal_line = t:line_new
@@ -43,7 +57,7 @@ else
 endif
 endfunction
 
-autocmd CursorMoved * call ReadTerm2()
+"autocmd CursorMoved * call ReadTerm2()
 "autocmd CursorMoved * :echom getcurpos()
 "autocmd CursorMovedI * :echom getcurpos()
 ":h dictwatcheradd()*

@@ -99,15 +99,25 @@ function! Tabline()
   return s
 endfunction
 
+function! GuardarUltimaLinea()
+  let t:terminal_new_line = line('.')
+endfunction
+
 function! AbrirTerminal()
   execute "vnew term://cmd"
+  execute "autocmd TermLeave <buffer> call GuardarUltimaLinea()"
+  execute "tnoremap <silent> <CR> <CR><C-\\><C-n>i"
+  execute "sign define error text=>> texthl=WarningMsg"
   let t:terminal_windows_id = win_getid()
   let t:terminal_id = b:terminal_job_id
-  "setlocal nonumber
+  setlocal nonumber
   setlocal norelativenumber
+  "setlocal signcolumn=yes:1
+  "setlocal statuscolumn=%(%#LineNr#%s%)
   execute chansend(t:terminal_id,'python')
   execute chansend(t:terminal_id,"\r")
-  let t:terminal_line = getcurpos()[1] 
+  let t:terminal_last_line=0
+  let t:terminal_new_line=0
   wincmd p
 endfunction
 
