@@ -100,17 +100,32 @@ function! Tabline()
 endfunction
 
 function! GuardarUltimaLinea()
-  let t:terminal_new_line = line('.')
+  let t:terminal_last_line = line('.')
+endfunction
+
+function! BuscarErrores(timer)
+  echom "buscando errores"
+  let t:terminal_new_line = line('.',t:terminal_windows_id) 
+  if t:terminal_new_line != t:terminal_last_line
+    execute win_id2win(t:terminal_windows_id) "wincmd w"
+    "execute(t:terminal_last_line..","..t:terminal_new_line.."g/Error/call sign_place(0,'','error','',{'lnum':line('.')})","silent!")
+    execute t:terminal_last_line..","..t:terminal_new_line "g/Error/call sign_place(0,'','error','',{'lnum':line('.')})"
+    let t:terminal_last_line = t:terminal_new_line
+    wincmd p
+  endif
 endfunction
 
 function! AbrirTerminal()
   execute "vnew term://cmd"
-  execute "autocmd TermLeave <buffer> call GuardarUltimaLinea()"
-  execute "tnoremap <silent> <CR> <CR><C-\\><C-n>i"
+  let t:timer = timer_start(1000, 'BuscarErrores',{'repeat':-1})
+  call timer_pause(t:timer,1)
+  "execute 'autocmd TermLeave <buffer> call GuardarUltimaLinea()'
+  execute 'autocmd TermLeave <buffer> normal! G'
+  execute "tnoremap <silent> <CR> <C-\\><C-n>:call GuardarUltimaLinea()<CR>i<CR>"
   execute "sign define error text=>> texthl=WarningMsg"
   let t:terminal_windows_id = win_getid()
   let t:terminal_id = b:terminal_job_id
-  setlocal nonumber
+  "setlocal nonumber
   setlocal norelativenumber
   "setlocal signcolumn=yes:1
   "setlocal statuscolumn=%(%#LineNr#%s%)
@@ -123,9 +138,10 @@ endfunction
 
 function! Correr()
   execute win_id2win(t:terminal_windows_id) "wincmd w"
+  normal! G
+  execute GuardarUltimaLinea()
   normal! "cgp
-  call chansend(t:terminal_id,"\r")  
-  call chansend(t:terminal_id,"\r")  
+  "call chansend(t:terminal_id,"\r")  
   wincmd p
 endfunction
 

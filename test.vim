@@ -14,6 +14,7 @@ endfunction
 "execute(":sign define error text=>> texthl=WarningMsg")
 
 function! BuscarErrores()
+  let t:terminal_new_line = line('.',t:terminal_windows_id) 
   if t:terminal_new_line != t:terminal_last_line
     execute win_id2win(t:terminal_windows_id) "wincmd w"
     "execute(t:terminal_last_line..","..t:terminal_new_line.."g/Error/call sign_place(0,'','error','',{'lnum':line('.')})","silent!")
