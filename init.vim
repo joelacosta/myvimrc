@@ -113,14 +113,21 @@ function! BuscarErrores(timer)
     if line =~ 'Error'
        call sign_place(0,'','error',t:terminal_bufer_number,{'lnum':t:terminal_last_line + s})
         call sign_unplace('g1',{'buffer':t:terminal_bufer_number})
-        call sign_place(1,'g1','error',t:terminal_bufer_number,{'lnum':line('w$',t:terminal_windows_id)})
+	let errores=1
+    endif
+    if line =='>>>' || line == '>>> '
+       let t = s
+       echom t + t:terminal_last_line
     endif
   endfor
-  if t:lines[-1]=='>>>' || t:lines[-1] == '>>> '
+  if exists("t")
     call timer_pause(t:timer,1)
     call sign_unplace('g1',{'buffer':t:terminal_bufer_number})
-    call sign_place(1,'g1','finalizado',t:terminal_bufer_number,{'lnum':line('w$',t:terminal_windows_id)})
-    echom 'PAUSADO'
+    if exists("errores")
+      call sign_place(1,'g1','error',t:terminal_bufer_number,{'lnum':t+ t:terminal_last_line})
+    else
+      call sign_place(1,'g1','finalizado',t:terminal_bufer_number,{'lnum':t+t:terminal_last_line})
+    endif
   endif
 endfunction
 
@@ -129,13 +136,13 @@ function! GuardarUltimaLinea()
   call timer_pause(t:timer,0)
 endfunction
 
-function SalirTab()
+function! SalirTab()
    if exists("t:timer")
 	call timer_pause(t:timer,1)
    endif
 endfunction
 
-function EntrarTab()
+function! EntrarTab()
    if exists("t:timer")
      call timer_pause(t:timer,0)
    endif
@@ -147,7 +154,7 @@ autocmd TabEnter * call EntrarTab()
 function! AbrirTerminal()
   execute "vnew term://cmd"
   highlight! link SignColumn LineNr
-  let t:timer = timer_start(200, 'BuscarErrores',{'repeat':-1})
+  let t:timer = timer_start(100, 'BuscarErrores',{'repeat':-1})
   call timer_pause(t:timer,1)
   execute 'autocmd WinClosed <buffer> call timer_stop(t:timer)'
   execute 'autocmd WinClosed <buffer> unlet t:timer'
