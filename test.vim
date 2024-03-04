@@ -1,28 +1,7 @@
 "probar con :global/Error/print
 " :%s/Error//gne
-function! Test()
-  if exists("t:indice")
-    let t:indice=t:indice+1
-  else
-    let t:indice = 0
-  endif
-echom t:indice
-endfunction
-
 "let timer = timer_start(1000, 'ReadTerm',{'repeat':-1})
-
 "execute(":sign define error text=>> texthl=WarningMsg")
-
-function! BuscarErrores()
-  let t:terminal_new_line = line('.',t:terminal_windows_id) 
-  if t:terminal_new_line != t:terminal_last_line
-    execute win_id2win(t:terminal_windows_id) "wincmd w"
-    "execute(t:terminal_last_line..","..t:terminal_new_line.."g/Error/call sign_place(0,'','error','',{'lnum':line('.')})","silent!")
-    execute t:terminal_last_line..","..t:terminal_new_line "g/Error/call sign_place(0,'','error','',{'lnum':line('.')})"
-    let t:terminal_last_line = t:terminal_new_line
-    wincmd p
-  endif
-endfunction
 
 function! ReadTerm()
   let t:line_new = getcurpos(t:terminal_windows_id)[1]
@@ -62,4 +41,51 @@ endfunction
 "autocmd CursorMoved * :echom getcurpos()
 "autocmd CursorMovedI * :echom getcurpos()
 ":h dictwatcheradd()*
+
+function! Test(timer)
+  echom "iniciando"
+  let hasta = nvim_buf_line_count(t:terminal_bufer_number) 
+  let t:lines = nvim_buf_get_lines(t:terminal_bufer_number,t:terminal_last_line, hasta,0) 
+  let s = 0
+  for line in t:lines
+    let s = s + 1
+    if line =~ 'Error'
+       call sign_place(0,'','error',t:terminal_bufer_number,{'lnum':t:terminal_last_line + s})
+    endif
+  endfor
+  if t:lines[-1]=='>>>'
+    echom "FIN"
+    call timer_pause(t:timer,1)
+    setlocal winbar ='frenado'
+  endif
+endfunction
+
+function! GuardarUltimaLinea()
+  let t:terminal_last_line = line('.',t:terminal_windows_id)
+  echom t:terminal_last_line
+  call timer_pause(t:timer,0)
+  setlocal winbar='buscando'
+endfunction
+
+function! AbrirTerminal()
+  execute "vnew term://cmd"
+  let t:timer = timer_start(1000, 'Test',{'repeat':-1})
+  call timer_pause(t:timer,1)
+  "execute 'autocmd TermLeave <buffer> call GuardarUltimaLinea()'
+  "execute 'autocmd TermLeave <buffer> normal! G'
+  execute 'tnoremap <silent> <CR> <C-\><C-n>:call GuardarUltimaLinea()<CR>i<CR>'
+  execute "sign define error text=>> texthl=WarningMsg"
+  let t:terminal_windows_id = win_getid()
+  let t:terminal_id = b:terminal_job_id
+  let t:terminal_bufer_number = bufnr()
+  "setlocal nonumber
+  setlocal norelativenumber
+  "setlocal signcolumn=yes:1
+  "setlocal statuscolumn=%(%#LineNr#%s%)
+  execute chansend(t:terminal_id,'python')
+  execute chansend(t:terminal_id,"\r")
+  let t:terminal_last_line=0
+  let t:terminal_new_line=0
+  wincmd p
+endfunction
 

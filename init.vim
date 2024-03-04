@@ -3,7 +3,7 @@ set number
 set relativenumber
 set scrolloff=7
 set list
-
+"--------------------------------- TEMP
 "-------------------------------- VENTANAS ------------------------
 set splitright
 let g:netrw_banner=0
@@ -99,52 +99,64 @@ function! Tabline()
   return s
 endfunction
 
-function! GuardarUltimaLinea()
-  let t:terminal_last_line = line('.')
+function! BuscarErrores(timer) 
+  call sign_unplace('g1',{'buffer':t:terminal_bufer_number})
+  call sign_place(1,'g1','buscando',t:terminal_bufer_number,{'lnum':line('w$',t:terminal_windows_id)})
+  let hasta = nvim_buf_line_count(t:terminal_bufer_number) 
+  let t:lines = nvim_buf_get_lines(t:terminal_bufer_number,t:terminal_last_line, hasta,0) 
+  let s = 0
+  for line in t:lines
+    let s = s + 1
+    if line =~ 'Error'
+       call sign_place(0,'','error',t:terminal_bufer_number,{'lnum':t:terminal_last_line + s})
+       "let t:wbar_terminal="%(%#LineNr#%{'[xxx]'}%)%=%{'terminal'}"
+        call sign_unplace('g1',{'buffer':t:terminal_bufer_number})
+        call sign_place(1,'g1','error',t:terminal_bufer_number,{'lnum':line('w$',t:terminal_windows_id)})
+    endif
+  endfor
+  if t:lines[-1]=='>>>' || t:lines[-1] == '>>> '
+    call timer_pause(t:timer,1)
+    call sign_unplace('g1',{'buffer':t:terminal_bufer_number})
+    call sign_place(1,'g1','finalizado',t:terminal_bufer_number,{'lnum':line('w$',t:terminal_windows_id)})
+    echom 'PAUSADO'
+  endif
 endfunction
 
-function! BuscarErrores(timer)
-  echom "buscando errores"
-  let t:terminal_new_line = line('.',t:terminal_windows_id) 
-  if t:terminal_new_line != t:terminal_last_line
-    execute win_id2win(t:terminal_windows_id) "wincmd w"
-    "execute(t:terminal_last_line..","..t:terminal_new_line.."g/Error/call sign_place(0,'','error','',{'lnum':line('.')})","silent!")
-    execute t:terminal_last_line..","..t:terminal_new_line "g/Error/call sign_place(0,'','error','',{'lnum':line('.')})"
-    let t:terminal_last_line = t:terminal_new_line
-    wincmd p
-  endif
+function! GuardarUltimaLinea()
+  let t:terminal_last_line = line('.',t:terminal_windows_id)
+  call timer_pause(t:timer,0)
 endfunction
 
 function! AbrirTerminal()
   execute "vnew term://cmd"
-  let t:timer = timer_start(1000, 'BuscarErrores',{'repeat':-1})
+  highlight! link SignColumn LineNr
+  let t:timer = timer_start(200, 'BuscarErrores',{'repeat':-1})
   call timer_pause(t:timer,1)
-  "execute 'autocmd TermLeave <buffer> call GuardarUltimaLinea()'
-  execute 'autocmd TermLeave <buffer> normal! G'
-  execute "tnoremap <silent> <CR> <C-\\><C-n>:call GuardarUltimaLinea()<CR>i<CR>"
+  execute 'autocmd WinClosed <buffer> call timer_stop(t:timer)'
+  execute 'tnoremap <buffer><silent> <CR> <C-\><C-n>:call GuardarUltimaLinea()<CR>i<CR>'
   execute "sign define error text=>> texthl=WarningMsg"
+  execute "sign define buscando text=>> texthl=ModeMsg"
+  execute "sign define finalizado text=>> texthl=LineNr"
   let t:terminal_windows_id = win_getid()
   let t:terminal_id = b:terminal_job_id
-  "setlocal nonumber
+  let t:terminal_bufer_number = bufnr()
+  setlocal nonumber
   setlocal norelativenumber
-  "setlocal signcolumn=yes:1
-  "setlocal statuscolumn=%(%#LineNr#%s%)
+  setlocal signcolumn=yes:1
+  setlocal statuscolumn=%s\  
   execute chansend(t:terminal_id,'python')
   execute chansend(t:terminal_id,"\r")
   let t:terminal_last_line=0
-  let t:terminal_new_line=0
   wincmd p
 endfunction
 
 function! Correr()
   execute win_id2win(t:terminal_windows_id) "wincmd w"
-  normal! G
   execute GuardarUltimaLinea()
   normal! "cgp
-  "call chansend(t:terminal_id,"\r")  
+  normal! G
   wincmd p
 endfunction
-
 
 function! AbrirDirectorio()
   if &buftype=='terminal'
@@ -161,3 +173,4 @@ function! AbrirDirectorio()
     echom "Joel solamente lo implemento para windows"
   endif
 endfunction
+
