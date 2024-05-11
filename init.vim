@@ -2,6 +2,7 @@ set noswapfile
 set number
 set relativenumber
 set scrolloff=7
+set smartcase
 set list
 "--------------------------------- TEMP
 "-------------------------------- VENTANAS ------------------------
@@ -25,9 +26,10 @@ let g:python3_host_prog = 'C:/Users/JoelA/AppData/Local/Programs/Python/Python31
 
 tmap <Esc> <C-\><C-n>
 nnoremap <silent> <leader>tp :call AbrirTerminal()<CR>
-nnoremap <silent> <Leader>r ggVG"cy :call Correr()<CR>
-nnoremap <silent> <Leader>c {V}"cy :call Correr()<CR>
-nnoremap <silent> <Leader>v _v$"cy :call Correr()<CR>
+nnoremap <silent> <leader>tt :call AbrirTerminal_cmd()<CR>
+nnoremap <silent> <Leader>r ggVG"cy :silent call Correr()<CR>
+nnoremap <silent> <Leader>c }V{"cy :silent call Correr()<CR>}
+nnoremap <silent> <Leader>v V"cy :silent call Correr()<CR>hj
 "--------------------------------------------------------------------
 
 "-------------------------- SATUS LINES----------------------------
@@ -42,14 +44,17 @@ set showcmdloc=statusline
 set statusline=%(%#LineNr#cmd\ %S%)%=%=%15(%l\ [%L]\ %p%%%)
 "--------------------PLUGINS-------------------------------------------
 call plug#begin()
-Plug 'morhetz/gruvbox'
+"Plug 'morhetz/gruvbox'
+Plug 'rebelot/kanagawa.nvim'
 call plug#end()
 "---------------------------------------------------------------------
 
 "------------------- COLORES------------------------------------------
-let g:gruvbox_contrast_dark = 'hard'
-let g:gruvbox_invert_selection=0
-colorscheme gruvbox
+"let g:gruvbox_contrast_dark = 'hard'
+"let g:gruvbox_invert_selection=0
+colorscheme kanagawa-wave
+highlight! link SignColumn NonText
+highlight! link LineNr NonText
 
 nnoremap <A-j> :m+1<CR>==
 nnoremap <A-k> :m-2<CR>==
@@ -73,7 +78,7 @@ function! Winbar()
   elseif &buftype==#"help"
     let s = " %=%=%(%#LineNr# [Help] %f%)"
   else
-    let s = "%=%(%#LineNr#%{&buftype}%)"
+    let s = "%=%(%#LineNr# %{&buftype}%)"
   endif
   return s
 endfunction
@@ -117,7 +122,7 @@ function! BuscarErrores(timer)
     endif
     if line =='>>>' || line == '>>> '
        let t = s
-       echom t + t:terminal_last_line
+       "echom t + t:terminal_last_line
     endif
   endfor
   if exists("t")
@@ -151,6 +156,16 @@ endfunction
 autocmd TabLeave * call SalirTab()
 autocmd TabEnter * call EntrarTab()
 
+function! AbrirTerminal_cmd()
+  execute "vnew term://cmd"
+  highlight! link SignColumn LineNr
+  setlocal nonumber
+  setlocal norelativenumber
+  setlocal signcolumn=yes:1
+  setlocal statuscolumn=%s\  
+  wincmd p
+endfunction
+
 function! AbrirTerminal()
   execute "vnew term://cmd"
   highlight! link SignColumn LineNr
@@ -159,7 +174,7 @@ function! AbrirTerminal()
   execute 'autocmd WinClosed <buffer> call timer_stop(t:timer)'
   execute 'autocmd WinClosed <buffer> unlet t:timer'
   execute 'tnoremap <buffer><silent> <CR> <C-\><C-n>:call GuardarUltimaLinea()<CR>i<CR>'
-  execute "sign define error text=>> texthl=WarningMsg"
+  execute "sign define error text=>> texthl=ErrorMsg"
   execute "sign define buscando text=>> texthl=ModeMsg"
   execute "sign define finalizado text=>> texthl=LineNr"
   let t:terminal_windows_id = win_getid()
@@ -178,7 +193,8 @@ endfunction
 function! Correr()
   execute win_id2win(t:terminal_windows_id) "wincmd w"
   execute GuardarUltimaLinea()
-  normal! "cgp
+  let @C = ''
+  normal! "cp
   normal! G
   wincmd p
 endfunction
